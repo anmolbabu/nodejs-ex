@@ -6,6 +6,11 @@ pipeline {
                 sh 'npm test'
             }
         }
+        stage('Print Env') {
+            steps {
+                sh 'cat /etc/*-release'
+            }
+        }
         stage('Build, tag and push docker image') {
             steps {
                 sh 'docker build -t nodejs-ex .'
