@@ -1,23 +1,32 @@
-pipeline {
-    agent any
-    stages {
-        stage('Run UTs') { 
-            steps {
-                sh 'npm test'
-            }
-        }
-        stage('Print Env') {
-            steps {
-                sh 'cat /etc/*-release'
-            }
-        }
-        stage('Build, tag and push docker image') {
-            steps {
-                sh 'docker build -t nodejs-ex .'
-                sh 'docker tag nodejs-ex anmolbabu/nodejs-ex:`date +"%m%d%y_%H%M"`.`git log --format="%H" -n 1`'
-                sh 'docker login --username anmolbabu --password redhat --email anmolbudugutta@gmail.com'
-                sh 'docker push anmolbabu/nodejs-ex'
-            }
+#!/usr/bin/env groovy
+@Library('github.com/msrb/cicd-pipeline-helpers')
+
+def commitId
+
+node {
+    def image = docker.image('anmolbabu/nodejs-ex')
+    stage('Checkout') {
+        checkout scm
+        commitId = sh(
+            returnStdout: true,
+            script: 'git rev-parse --short HEAD'
+        ).trim()
+    }
+    stage('Run UTs') { 
+        sh 'npm test'
+    }
+    stage('Build and tag docker image') {
+        docker.build(image.id, '--pull --no-cache .')
+        sh "docker tag ${image.id} hub.docker.com/${image.id}"
+        docker.build('nodejs-ex-tests', '-f Dockerfile.tests .')
+    }
+    stage('Push image') {
+        docker.withRegistry(
+            'https://registry.hub.docker.com', 
+            'docker-credentials'
+        ) {
+            image.push('latest')
+            image.push(commitId)
         }
     }
 }

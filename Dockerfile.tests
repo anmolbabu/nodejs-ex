@@ -1,0 +1,6 @@
+FROM anmolbabu/nodejs-ex
+MAINTAINER Anmol Babu <anmolbudugutta@gmail.com>
+
+COPY . /nodejs-ex
+WORKDIR /nodejs-ex
+RUN npm test
