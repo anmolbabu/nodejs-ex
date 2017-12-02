@@ -3,4 +3,9 @@ MAINTAINER Anmol Babu <anmolbudugutta@gmail.com>
 
 COPY . /nodejs-ex
 WORKDIR /nodejs-ex
+
+EXPOSE 9090
+
+RUN npm install
+RUN nohup npm start & > /dev/null
 RUN npm test

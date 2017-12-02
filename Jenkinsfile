@@ -12,7 +12,9 @@ node {
             script: 'git rev-parse --short HEAD'
         ).trim()
     }
-    stage('Run UTs') { 
+    stage('Run UTs') {
+        sh 'npm install'
+        sh 'nohup npm start & > /dev/null'
         sh 'npm test'
     }
     stage('Build and tag docker image') {
